@@ -1,0 +1,10 @@
+.login-class {
+    background-color: white;
+    text-align: center;
+}
+
+.login-card {
+    width: 400px;
+    margin: auto;
+    margin-top: 2em;
+}
