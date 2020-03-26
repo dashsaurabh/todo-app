@@ -26,10 +26,10 @@ class Header extends React.Component {
     render() {
         return (
             <div style={{ flexGrow: 1, padding: 0, margin: 0 }}>
-                <AppBar position="static">
+                <AppBar position="static" style={{ backgroundColor: "#db4c3f" }}>
                     <Toolbar>
                         <Typography variant="h6" style={{ flexGrow: 1 }}>
-                            ToDo App
+                            MyPlanner
                         </Typography>
                         {this.renderAuthContent()}
                     </Toolbar>

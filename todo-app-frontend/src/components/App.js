@@ -2,7 +2,7 @@ import React from 'react';
 import Header from './Header';
 import { connect } from 'react-redux';
 import * as actions from '../actions';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import LoginOptions from './LoginOptions';
 import ToDoDashboard from './ToDoDashboard';
 
@@ -18,6 +18,9 @@ class App extends React.Component {
                 <BrowserRouter>
                     <div>
                         <Header />
+                        <Route exact path="/">
+                            { this.props.auth ? <Redirect to="/dashboard/weekly" /> : <LoginOptions />}
+                        </Route>
                         <Route exact path="/login" component={LoginOptions} />
                         <Route path="/dashboard/:condition" component={ToDoDashboard} />
                     </div>
@@ -27,4 +30,8 @@ class App extends React.Component {
     }
 }
 
-export default connect(null, actions)(App);
+function mapStateToProps({ auth }){
+    return { auth };
+}
+
+export default connect(mapStateToProps, actions)(App);

@@ -10,19 +10,35 @@ import { Button } from '@material-ui/core';
 import { connect } from 'react-redux';
 import * as actions from '../actions';
 
-class CreateToDo extends React.Component {
+class UpdateToDo extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            showForm: false,
-            todoDesc: '',
-            todoDate: new Date()
+            todoDesc: this.props.task.todoDesc,
+            todoDate: this.props.task.todoDate
         }
 
+        this.updateTask = this.updateTask.bind(this);
+        this.hideTaskForm = this.hideTaskForm.bind(this);
         this.handleChange = this.handleChange.bind(this);
-        this.handleDateChange = this.handleDateChange.bind(this);
-        this.createTask = this.createTask.bind(this);
-        this.showTaskForm = this.showTaskForm.bind(this);
+        this.handleDateChange = this.handleChange.bind(this);
+    }
+
+    updateTask() {
+        let task = this.props.task;
+        task.todoDesc = this.state.todoDesc;
+        task.todoDate = this.state.todoDate;
+        task.completed = this.props.task.completed;
+        this.props.updateToDo(task);
+        this.props.hideTaskEditForm(task);
+    }
+
+    hideTaskForm() {
+        let task = this.props.task;
+        task.todoDesc = this.state.todoDesc;
+        task.todoDate = this.state.todoDate;
+        task.completed = this.props.task.completed;
+        this.props.hideTaskEditForm(task)
     }
 
     handleChange(event) {
@@ -36,21 +52,12 @@ class CreateToDo extends React.Component {
         this.setState({ todoDate: event })
     }
 
-    createTask() {
-        this.props.createToDo(this.state.todoDesc, this.state.todoDate);
-    }
-
-    showTaskForm(){
-        this.setState({showForm: !this.state.showForm})
-    }
-
-    renderForm() {
-        const isFetching = this.props.apiCall === null ? false : this.props.apiCall.isFetching;
-        if (this.state.showForm === true) {
+    render() {
             return (
-                <div>
+                <div style={{ marginTop: 20, marginBottom: 20 }}>
                     <form>
                         <TextField id="task-desc"
+                            size="small"
                             name="todoDesc"
                             variant="outlined"
                             value={this.state.todoDesc}
@@ -60,6 +67,7 @@ class CreateToDo extends React.Component {
                         />
                         <MuiPickersUtilsProvider utils={DateFnsUtils}>
                             <KeyboardDatePicker
+                                size="small"
                                 name="todoDate"
                                 variant="inline"
                                 inputVariant="outlined"
@@ -76,39 +84,17 @@ class CreateToDo extends React.Component {
                             />
                         </MuiPickersUtilsProvider>
                     </form>
-                    <Button disabled={isFetching} onClick={this.createTask} variant="contained" 
-                            style={{ marginTop: 10, marginLeft: 3, backgroundColor: "#db4c3f", color: "white" }}>
-                        Save Task
+                    <Button size="small" onClick={this.updateTask} variant="contained" 
+                        style={{ marginTop: 10, marginLeft: 3, backgroundColor: "#db4c3f", color: "white" }}>
+                        Update
                     </Button>
-                    <Button disabled={isFetching} onClick={this.showTaskForm}variant="contained"  style={{ marginTop: 10, marginLeft: 3 }}>
+                    <Button size="small" onClick={this.hideTaskForm} variant="contained" 
+                        style={{ marginTop: 10, marginLeft: 3 }}>
                         Cancel
                     </Button>
                 </div>
             )
-        }else{
-            return(
-                <Button onClick={this.showTaskForm} variant="contained" 
-                    style={{ marginTop: 10, marginLeft: 3, backgroundColor: "#db4c3f", color: "white" }}>
-                        New Task
-                </Button>
-            )
-        }
-    }
-
-    render() {
-        
-        return (
-            <div>
-                {this.renderForm()}
-            </div>
-
-        )
-
     }
 }
 
-function mapStateToProps({ apiCall }) {
-    return { apiCall };
-}
-
-export default connect(mapStateToProps, actions)(CreateToDo);
+export default connect(null, actions)(UpdateToDo);

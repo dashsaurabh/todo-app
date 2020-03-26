@@ -12,6 +12,7 @@
   "author": "Saurabh Dashora",
   "license": "ISC",
   "dependencies": {
+    "@material-ui/lab": "^4.0.0-alpha.46",
     "body-parser": "^1.19.0",
     "concurrently": "^5.1.0",
     "cookie-session": "^1.4.0",

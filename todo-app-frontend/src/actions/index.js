@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { FETCH_USER, CREATE_TODO, CALL_API, LIST_TODO, UPDATE_TODO } from './types';
+import { FETCH_USER, CREATE_TODO, CALL_API, LIST_TODO, UPDATE_TODO, LIST_OVERDUE_TASKS, DELETE_TODO, LIST_TODO_BY_PRIORITY } from './types';
 import differenceInCalendarDays from 'date-fns/differenceincalendardays';
-import { addDays } from 'date-fns'
+import { addDays } from 'date-fns';
+import { subDays } from 'date-fns';
 
 export const fetchUser = () =>
     async dispatch => {
@@ -17,23 +18,31 @@ export const createToDo = (todoDesc, todoDate) =>
             todoDate: todoDate
         });
         if (res.status === 201) {
-            let tasks = await getTaskListFor7Days();
             dispatch({ type: CALL_API, payload: { isFetching: false } })
             dispatch({ type: CREATE_TODO, payload: res.data });
-            dispatch({ type: LIST_TODO, payload: tasks })
         }
     }
 
 export const listToDoNext7Days = () =>
     async dispatch => {
+        dispatch({ type: CALL_API, payload: { isFetching: true } })
         let tasks = await getTaskListFor7Days();
         dispatch({ type: LIST_TODO, payload: tasks })
+        dispatch({ type: CALL_API, payload: { isFetching: false } })
     }
 
 export const listToDoForToday = () =>
     async dispatch => {
+        dispatch({ type: CALL_API, payload: { isFetching: true } })
         let tasks = await getTaskListForToday();
         dispatch({ type: LIST_TODO, payload: tasks })
+        dispatch({ type: CALL_API, payload: { isFetching: false } })
+    }
+
+export const listOverdueTasks = () =>
+    async dispatch => {
+        let tasks = await getOverdueTasks();
+        dispatch({ type: LIST_OVERDUE_TASKS, payload: tasks })
     }
 
 export const updateToDo = (task) =>
@@ -42,14 +51,31 @@ export const updateToDo = (task) =>
         const res = await axios.put(`/api/todos/${task._id}`, {
             todoDesc: task.todoDesc,
             todoDate: task.todoDate,
+            priority: task.priority,
             completed: task.completed,
         });
 
         if (res.status === 202) {
-            let tasks = await getTaskListFor7Days();
             dispatch({ type: UPDATE_TODO, payload: res.data });
-            dispatch({ type: LIST_TODO, payload: tasks })
         }
+    }
+
+export const deleteTask = (taskId) => 
+    async dispatch => {
+        const res = await axios.delete(`/api/todos/${taskId}`);
+
+        if(res.status === 200) {
+            dispatch({ type: DELETE_TODO, payload: res.data });
+        }
+    }
+
+export const listToDoByPriority = (priority) =>
+    async dispatch => {
+        dispatch({ type: CALL_API, payload: { isFetching: true } })
+        let tasks = await getTasksByPriority(priority);
+        dispatch({ type: LIST_TODO_BY_PRIORITY, payload: tasks})
+        dispatch({ type: CALL_API, payload: { isFetching: false } })
+
     }
 
 async function getTaskListFor7Days() {
@@ -100,6 +126,39 @@ async function getTaskListForToday() {
     let taskByDay = res.data;
     let tasks = {};
     tasks[startDate.toDateString()] = { taskByDay };
+    return tasks;
+}
+
+async function getOverdueTasks() {
+    let date = subDays(new Date(), 1);
+    let dateString = new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
+        .toISOString()
+        .split("T")[0];
+    
+    console.log(dateString)
+
+    const res = await axios.get('/api/todos', {
+        params: {
+            startDate: '1900-01-01',
+            endDate: dateString
+        }
+    });
+    let tasks = res.data.filter((task) => task.completed === false)
+
+    return tasks;
+
+}
+
+async function getTasksByPriority(priority) {
+    const res = await axios.get('/api/todos', {
+        params: {
+            startDate: '1900-01-01',
+            endDate: '9999-12-31',
+            priority: priority.toUpperCase()
+        }
+    });
+
+    let tasks = res.data;
     return tasks;
 }
 
